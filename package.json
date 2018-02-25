@@ -10,6 +10,20 @@
     "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Toninie/pic-tune.git"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [
+    "html5",
+    "canvas",
+    "picture",
+    "image"
+  ],
   "browserslist": [
     "> 1%",
     "last 2 versions",
