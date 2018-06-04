@@ -179,12 +179,6 @@ function bindEvents( editorObj ) {
         crop.style.display = "none";
 
         canvas.draw(canvas.texture(this)).update();
-
-        if ( editorObj.file.type == "image/gif" ) {
-            showImage.style.display = 'block';
-        } else {
-            showImage.style.display = 'none';
-        }
     }
 
     picture.error = function ( e ) {
@@ -331,6 +325,8 @@ export default class PicTune {
                 this.confirm(fr.result);
                 this.file = file;
 
+                this.showImage.style.display = file.type == "image/gif" ? 'block' : 'none';
+
                 resolve();
             };
 
@@ -391,6 +387,8 @@ export default class PicTune {
         if ( typeof toggle == "undefined" ) {
             toggle = !isShow;
         }
+
+        if ( toggle ) this.showImage.style.display = 'none';
 
         cStyle.display = toggle ? "block" : "none";
         cStyle.left = cStyle.top = 0;
@@ -475,6 +473,8 @@ export default class PicTune {
     rotate ( angle, isTurnOver ) {
         const picture = this.picture;
 
+        this.showImage.style.display = 'none';
+
         let c = this.get2dCanvas(),
             c2 = c.getContext('2d'),
             pW = picture.width,
@@ -528,6 +528,8 @@ export default class PicTune {
     base ( brightness = 0, contrast = 0, saturation = 0, radius = 0 ) {
         const canvas = this.canvas;
 
+        this.showImage.style.display = 'none';
+
         canvas.draw(canvas.texture(this.originImage)).brightnesscontrastSaturationBur([brightness, contrast, saturation, radius]).update();
     }
     /**
@@ -539,6 +541,8 @@ export default class PicTune {
      */
     huaColor ( hue = 0, greenRed = 0, purpleGreen = 0, yellowBlue = 0 ) {
         const canvas = this.canvas;
+
+        this.showImage.style.display = 'none';
 
         canvas.draw(canvas.texture(this.originImage)).hueColor([hue, greenRed, purpleGreen, yellowBlue]).update();
     }
