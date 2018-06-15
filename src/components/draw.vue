@@ -38,7 +38,7 @@ export default {
         lineWidth ( val ) {
             this.editor.lineStyle.width = val;
         },
-        color ( val ) {
+        lineColor ( val ) {
             this.editor.lineStyle.color = val;
         }
     },

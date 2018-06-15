@@ -1,7 +1,7 @@
 {
   "name": "pic-tune",
   "description": "A js plugin for edit picture by canvas",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Toninie",
   "license": "MIT",
   "private": false,

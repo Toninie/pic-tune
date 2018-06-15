@@ -1,6 +1,6 @@
 # pic-tune
 A js plugin for edit picture by canvas
-[demo](https://toninie.github.io/pic-tune/demo.html)
+[demo](https://toninie.github.io/pic-tune)
 [中文简介](https://toninie.github.io/blog/detail/2)
 
 ```

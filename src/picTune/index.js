@@ -427,9 +427,10 @@ export default class PicTune {
             wrapper.style.height = this.height;
             wrapper.style['line-height'] = this.height;
         }
-        if ( options.url ) this.loadAsUrl( options.url );
 
         bindEvents(this);
+
+        if ( options.url ) this.loadAsUrl( options.url );
     }
 
     /**
