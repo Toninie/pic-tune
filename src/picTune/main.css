@@ -102,3 +102,53 @@
 .editor-crop-right.editor-crop-bottom {
     cursor: se-resize;
 }
+
+.image-editor-text {
+    position: absolute;
+    min-width: 20%;
+    max-width: 100%;
+    min-height: 20px;
+    line-height: 20px;
+    font-size: 20px;
+    border: 1px solid #eaeaea;
+    text-align: left;
+    background-color: rgba(234,234,234, 0.5);
+}
+
+.editor-text-operate {
+    position: absolute;
+    top: -20px;
+    left: -1px;
+    width: calc(100% + 2px);
+    height: 20px;
+    background-color: #eaeaea;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    cursor: move;
+}
+
+.editor-text-operate > div {
+    display: inline-block;
+    float: right;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    margin: 2px 2px 0 0;
+    color: #fff;
+    font-family: sans-serif;
+    font-size: 16px;
+    font-weight: normal;
+    border-radius: 2px;
+    background-color: red;
+    text-align: center;
+    cursor: pointer;
+}
+
+.editor-text-operate > div.editor-text-confirm {
+    background-color: green;
+    font-size: 12px;
+}
+
+.editor-text-operate > div:hover {
+    opacity: 0.8;
+} 

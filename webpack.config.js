@@ -2,11 +2,14 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
-  entry: './src/main.js',
+  entry: {
+    'demo': './src/main.js',
+    'pic-tune.min': './src/picTune/index.js'
+  },
   output: {
     path: path.resolve(__dirname, './dist'),
-    publicPath: '',
-    filename: 'pic-tune.min.js',
+    publicPath: 'dist/',
+    filename: '[name].js',
     library: 'picTune',
     libraryTarget: 'umd',
     umdNamedDefine: true
