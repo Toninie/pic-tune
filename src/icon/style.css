@@ -95,7 +95,9 @@
   content: "\ea10";
 }
 
-/*[class^="icon-"]:after, [class*=" icon-"]:after {
-  margin-left: 0;
-  content: '';
-}*/
+@media screen and (max-width: 840px) { 
+  [class^="icon-"]:after, [class*=" icon-"]:after {
+    margin-left: 0;
+    content: '';
+  }
+}

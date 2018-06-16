@@ -80,6 +80,8 @@ export default {
     position: relative;
     background-color: #eee;
     padding: 10px;
+    white-space: nowrap;
+    overflow: auto;
 }
 
 .image-operate > * {
