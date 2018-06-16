@@ -54,7 +54,6 @@ export default {
             this.editor.loadAsFile(file);
         },
         save () {
-            this.editor.confirm();
             this.editor.download();
         }
     },

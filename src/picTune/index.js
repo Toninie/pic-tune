@@ -90,9 +90,6 @@ function bindEvents( editorObj ) {
         drawPoint.push([curPos.pageX - curPos.pageLeft, curPos.pageY - curPos.pageTop]);
         updatePos(e);
 
-        console.log(curPos.pageX - curPos.pageLeft, curPos.pageY - curPos.pageTop);
-
-
         if ( drawPoint.length > 2 ) {
             editorObj.draw(drawPoint);
             drawPoint.shift();
