@@ -2,14 +2,7 @@
     <div id="test">
         <!-- 操作按键栏 -->
         <div class="image-operate">
-            <el-upload
-                action=""
-                :auto-upload="false"
-                :show-file-list="false"
-                accept="image/*"
-                :on-change="onFileChange">
-                <el-button class="icon-image" type="primary"></el-button>
-            </el-upload>
+            <select-image :editor="editor"></select-image>
             <el-button class="icon-save" type="primary" @click="save"></el-button>
             <set-crop :editor="editor"></set-crop>
             <set-rotate :editor="editor"></set-rotate>
@@ -18,11 +11,17 @@
             <set-draw :editor="editor"></set-draw>
             <set-text :editor="editor"></set-text>
         </div>
+        <div class="image-step">
+            <el-button v-if="editor" :disabled="editor.version === 0" class="icon-undo" @click="undo"></el-button>
+            <el-button v-if="editor" :disabled="editor.version === -1" class="icon-redo" @click="redo"></el-button>
+        </div>
         <div ref="image-editor"></div>
+        <footer>Power By <a href="https://github.com/Toninie/pic-tune" target="_blank">pic-tune</a></footer>
     </div>
 </template>
 
 <script>
+import selectImage from './components/image';
 import setCrop from './components/crop';
 import setRotate from './components/rotate';
 import setBase from './components/base';
@@ -35,6 +34,7 @@ import PicTune from './picTune/index.js';
 export default {
     name: 'test',
     components: {
+        selectImage,
         setCrop,
         setRotate,
         setBase,
@@ -48,20 +48,21 @@ export default {
         }
     },
     methods: {
-        onFileChange (e) {
-            const file = e.raw;
-
-            this.editor.loadAsFile(file);
-        },
         save () {
             this.editor.download();
+        },
+        undo () {
+            this.editor.skip('-');
+        },
+        redo () {
+            this.editor.skip('+');
         }
     },
     mounted() {
         this.editor = new PicTune({
             element: this.$refs['image-editor'],
             height: '545px',
-            url: 'static/images/demo.jpg',
+            url: '',
             onMovingCrop: () => {
                 
             },
@@ -80,8 +81,23 @@ export default {
     position: relative;
     background-color: #eee;
     padding: 10px;
+    margin-right: 110px;
     white-space: nowrap;
     overflow: auto;
+}
+
+.image-step {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 110px;
+    padding: 10px 5px;
+    background-color: #eaeaea;
+    white-space: nowrap;
+}
+
+.image-step .el-button + .el-button {
+    margin: 0;
 }
 
 .image-operate > * {
@@ -135,5 +151,20 @@ export default {
 
 .color-slider.yellow-blue{
     background-image: url(assets/yellowBlueSlider.jpg);
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    line-height: 20px;
+    font-size: 12px;
+    text-align: center;
+    color: #aaa;
+    background-color: #eee;
+}
+
+footer a {
+    text-decoration: none;
 }
 </style>

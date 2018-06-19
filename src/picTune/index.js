@@ -6,6 +6,9 @@ import { http, turnOver, runFunction, convertDataurlToBlob } from './utils';
 // 裁剪框的一对边框所占像素
 const BORDER_PIX = 4;
 
+// 图片缓存，用于撤销修改
+const CACHES = [];
+
 /**
  * 绑定事件
  * @param  {Object} editorObj 编辑器对象 
@@ -261,12 +264,15 @@ function bindEvents( editorObj ) {
     }
 
     function moveEnd () {
+        if ( isDraw ) {
+            editorObj.confirm();
+            drawPoint.length = 0;
+        }
+
         isMove = false;
         isResize = false;
         isDraw = false;
         isText = false;
-
-        drawPoint.length = 0;
 
         clearTimeout(moveTimer);
     }
@@ -360,6 +366,7 @@ export default class PicTune {
                 color: '#000',
                 join: 'round'
             },
+            version: -1,
             drawable: false,
             onMovingCrop () {},
         }, options);
@@ -389,7 +396,6 @@ export default class PicTune {
         picture.className = 'image-editor-picture';
 
         showImage.className = 'image-editor-show';
-        showImage.style.display = 'none';
 
         canvas.className = 'image-editor-canvas';
         canvas.innerText = '你的浏览器不支持HTML5.';
@@ -412,8 +418,8 @@ export default class PicTune {
             '<div class="editor-crop-right editor-crop-bottom"></div>';
 
         source.appendChild(picture);
-        source.appendChild(canvas);
         source.appendChild(showImage);
+        source.appendChild(canvas);
         source.appendChild(text);
         source.appendChild(crop);
 
@@ -453,12 +459,15 @@ export default class PicTune {
         const fr = new FileReader();
         const p = new Promise((resolve, reject) => {
             fr.onload = ( e ) => {
+                CACHES.length = 0;
+                this.version = -1;
+
                 this.confirm(fr.result);
                 this.file = file;
 
-                this.showImage.style.display = file.type == "image/gif" ? 'block' : 'none';
+                this.canvas.style.opacity = file.type == "image/gif" ? 0 : 1;
 
-                resolve();
+                resolve(fr.result);
             };
 
         });
@@ -476,6 +485,13 @@ export default class PicTune {
     confirm ( dataurl ) {
         dataurl = dataurl || this.canvas.toDataURL(this.output || this.file.type);
 
+        if ( this.version > -1 ) {
+            CACHES.length = this.version + 1;
+            this.version = -1;
+        }
+
+        CACHES.push(dataurl);
+
         this.picture.src = dataurl;
         this.originImage.src = dataurl;
         this.showImage.src = dataurl;
@@ -488,6 +504,40 @@ export default class PicTune {
     reset () {
         this.picture.src = this.originImage.src;
         this.text.style.display = 'none';
+    }
+
+    /**
+     * 跳转到某一步的修改
+     * @param  {String} idx 具体某一步的索引，或者"+"代表下一步，"-"代表上一步
+     * @return 无
+     */
+    skip ( idx ) {
+        let dataurl;
+
+        switch ( idx ) {
+            case "+":
+                if ( this.version !== -1 && ++ this.version < CACHES.length ) dataurl = CACHES[this.version];
+
+                if ( this.version === CACHES.length ) this.version = -1;
+                break;
+            case "-":
+                if ( this.version > 0 ) {
+                    -- this.version;
+                } else if ( CACHES.length > 1 ) {
+                    this.version = CACHES.length - 2;
+                }
+
+                dataurl = CACHES[this.version];
+                break;
+            default:
+                dataurl = CACHES[idx];
+        }
+
+        if ( dataurl ) {
+            this.picture.src = dataurl;
+            this.originImage.src = dataurl;
+            this.showImage.src = dataurl;
+        }
     }
 
     /**
@@ -520,7 +570,7 @@ export default class PicTune {
             toggle = !isShow;
         }
 
-        if ( toggle ) this.showImage.style.display = 'none';
+        if ( toggle ) this.canvas.style.opacity = 1;
 
         cStyle.display = toggle ? "block" : "none";
         cStyle.left = cStyle.top = 0;
@@ -565,6 +615,7 @@ export default class PicTune {
 
         return c;
     }
+
     /**
      * 裁切框当前位置
      * @return {Object} 位置信息
@@ -589,6 +640,7 @@ export default class PicTune {
             }
         }
     }
+
     /**
      * 确认裁切
      */
@@ -597,6 +649,7 @@ export default class PicTune {
 
         this.confirm(this.get2dCanvas(postion.left, postion.top, postion.width, postion.height).toDataURL(this.output || this.file.type));
     }
+
     /**
      * 旋转
      * @param  {Number}  angle      旋转的角度
@@ -605,7 +658,7 @@ export default class PicTune {
     rotate ( angle, isTurnOver ) {
         const picture = this.picture;
 
-        this.showImage.style.display = 'none';
+        this.canvas.style.opacity = 1;
 
         let c = this.get2dCanvas(),
             c2 = c.getContext('2d'),
@@ -647,9 +700,9 @@ export default class PicTune {
 
         if ( isTurnOver ) turnOver(c, isTurnOver);
 
-        this.picture.src = c.toDataURL(this.output || this.file.type);
-        // this.confirm(c.toDataURL(this.output || this.file.type));
+        this.confirm(c.toDataURL(this.output || this.file.type));
     }
+
     /**
      * 基础参数调节
      * @param  {Number} brightness 亮度 -1~1
@@ -660,10 +713,11 @@ export default class PicTune {
     base ( brightness = 0, contrast = 0, saturation = 0, radius = 0 ) {
         const canvas = this.canvas;
 
-        this.showImage.style.display = 'none';
+        this.canvas.style.opacity = 1;
 
         canvas.draw(canvas.texture(this.originImage)).brightnesscontrastSaturationBur([brightness, contrast, saturation, radius]).update();
     }
+
     /**
      * 色彩调节
      * @param  {Number} hue         色相
@@ -674,10 +728,11 @@ export default class PicTune {
     huaColor ( hue = 0, greenRed = 0, purpleGreen = 0, yellowBlue = 0 ) {
         const canvas = this.canvas;
 
-        this.showImage.style.display = 'none';
+        this.canvas.style.opacity = 1;
 
         canvas.draw(canvas.texture(this.originImage)).hueColor([hue, greenRed, purpleGreen, yellowBlue]).update();
     }
+
     /**
      * 输出图像
      * @param  {Number}  width  宽度
@@ -709,28 +764,28 @@ export default class PicTune {
 
         return data;
     }
+
     /**
      * 下载图像到本地
-     * @param  {Number}  width  宽度
-     * @param  {Number}  height 高度
+     * @param  {String}  fileName  文件名
      */
-    download ( width, height ) {
+    download ( fileName ) {
         const originImage = this.originImage;
 
         let aLink = document.createElement('a'),
             evt = document.createEvent('MouseEvents'),
-            type = (this.output || this.file.type).split("/")[1] || 'jpg';
+            type = (this.output || this.file.type).split("/")[1] || 'jpg',
+            width = originImage.width,
+            height = originImage.height;
 
-        width = width || originImage.width;
-        height = height || originImage.height;
-
-        aLink.href = this.getData(width, height);
-        aLink.download = `${width}x${height}.${type}`;
+        aLink.href = window.URL.createObjectURL(this.getData(width, height, true));
+        aLink.download = fileName ? `${fileName}.${type}` : `${width}x${height}.${type}`;
 
         evt.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0);
 
         aLink.dispatchEvent(evt);
     }
+
     /**
      * 上传图片
      * @param  {Object} params 上传参数
@@ -754,6 +809,11 @@ export default class PicTune {
         return http.post(options);
     }
 
+    /**
+     * 画线条
+     * @param  {Array} points 坐标点数组
+     * @return 无
+     */
     draw ( points ) {
         const lineStyle = this.lineStyle;
 
@@ -776,6 +836,12 @@ export default class PicTune {
         this.picture.src = c.toDataURL(this.output || this.file.type);
     }
 
+    /**
+     * 显示/隐藏文本框
+     * @param  {[type]} toggle [description]
+     * @param  {[type]} style  [description]
+     * @return {[type]}        [description]
+     */
     toggleText ( toggle, style ) {
         const text = this.text;
         const textStyle = text.style;
@@ -797,6 +863,10 @@ export default class PicTune {
         }
     }
 
+    /**
+     * 确定添加文本
+     * @return 无
+     */
     commitText () {
         let text = this.text,
             textStyle = text.style,
@@ -831,7 +901,7 @@ export default class PicTune {
         }
 
         textStyle.display = 'none';
-        picture.src = c.toDataURL(this.output || this.file.type);
+        this.confirm(c.toDataURL(this.output || this.file.type));
     }
 }
 

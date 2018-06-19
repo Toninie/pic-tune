@@ -11,10 +11,6 @@
                 <el-color-picker v-model="lineColor" size="mini"></el-color-picker>
                 <el-checkbox v-model="isDraw">使用</el-checkbox>
             </div>
-            <p>
-                <el-button type="primary" size="mini" @click="editor.confirm()">确定</el-button>
-                <el-button size="mini" @click="editor.reset()">还原</el-button>
-            </p>
         </el-popover>
 
         <el-button class="icon-pencil" type="primary" @click="isDraw = true" v-popover:draw></el-button>

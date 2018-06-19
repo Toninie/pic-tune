@@ -7,10 +7,6 @@
             <ul>
                 <li v-for="item in rotate" @click="setRotate(item.params)">{{item.name}}</li>
             </ul>
-            <p>
-                <el-button type="primary" size="mini" @click="editor.confirm()">确定</el-button>
-                <el-button size="mini" @click="editor.reset()">还原</el-button>
-            </p>
         </el-popover>
 
         <el-button class="icon-rotate" type="primary"  v-popover:rotate></el-button>

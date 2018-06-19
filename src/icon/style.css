@@ -87,6 +87,14 @@
   content: "调色";
 }
 
+.icon-undo:before {
+  content: "\e967";
+}
+
+.icon-redo:before {
+  content: "\e968";
+}
+
 .icon-cancel:before {
   content: "\ea0f";
 }
