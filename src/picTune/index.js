@@ -90,7 +90,12 @@ function bindEvents( editorObj ) {
     function drawing( e ) {
         if ( !isDraw || !editorObj.drawable ) return;
 
-        drawPoint.push([curPos.pageX - curPos.pageLeft, curPos.pageY - curPos.pageTop]);
+        let rate = picture.height / canvas.clientHeight,
+            x = (curPos.pageX - curPos.pageLeft) * rate,
+            y = (curPos.pageY - curPos.pageTop) * rate;
+
+
+        drawPoint.push([x, y]);
         updatePos(e);
 
         if ( drawPoint.length > 2 ) {
