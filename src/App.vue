@@ -62,7 +62,7 @@ export default {
         this.editor = new PicTune({
             element: this.$refs['image-editor'],
             height: '545px',
-            url: '',
+            url: 'static/panel.png',
             onMovingCrop: () => {
                 
             },

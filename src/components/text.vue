@@ -61,14 +61,14 @@ export default {
         style: {
             handler(newVal, oldVal) {
                 console.log(newVal, oldVal);
-                this.editor.toggleText(true, this.style);
+                this.editor.toggleAdd(true, this.style);
             },
             deep: true
         },
     },
     methods: {
         showText () {
-            this.editor.toggleText(true, this.style);
+            this.editor.toggleAdd(true, this.style);
         }
     }
 }

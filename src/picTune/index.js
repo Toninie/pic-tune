@@ -21,13 +21,15 @@ function bindEvents( editorObj ) {
     const showImage = editorObj.showImage;
     const canvas = editorObj.canvas;
     const crop = editorObj.crop;
-    const text = editorObj.text;
-    const textOperate = text.getElementsByClassName('editor-text-operate')[0];
+    const addition = editorObj.addition;
+    const addOperate = addition.getElementsByClassName('editor-add-operate')[0];
+    const addContent = addition.getElementsByClassName('editor-add-content')[0];
 
     let isMove = false,
         isResize = false,
         isDraw = false,
-        isText = false,
+        isAdd = false,
+        isContent = false,
         maxPos = {
             left: 0,
             top: 0,
@@ -48,18 +50,21 @@ function bindEvents( editorObj ) {
     canvas.addEventListener('touchstart', moveStart, false);
     canvas.addEventListener('touchmove', drawing, false);
 
-    textOperate.onmousedown = moveStart;
-    textOperate.onclick = ( e ) => {
+    addOperate.onmousedown = moveStart;
+    addOperate.addEventListener('touchstart', moveStart, false);
+    addOperate.onclick = ( e ) => {
         switch ( e.target.className ) {
-            case 'editor-text-confirm':
-                editorObj.commitText();
+            case 'editor-add-confirm':
+                editorObj.commitAdd();
                 break;
-            case 'editor-text-cancel':
-                editorObj.toggleText(false);
+            case 'editor-add-cancel':
+                editorObj.toggleAdd(false);
                 break;
         }
     }
-    textOperate.addEventListener('touchstart', moveStart, false);
+
+    addContent.onmousedown = moveStart;
+    addContent.addEventListener('touchstart', moveStart, false);
 
     wrapper.onmousemove = moveing;
     wrapper.onmouseup = moveEnd;
@@ -111,20 +116,21 @@ function bindEvents( editorObj ) {
         maxPos.top = source.clientHeight - (crop.offsetHeight);
         maxPos.width = source.clientWidth,
         maxPos.height = source.clientHeight;
-        isMove = true;
 
         updatePos(e);
 
         switch ( target ) {
             case canvas:
                 isDraw = true;
-                isMove = false; 
                 break;
-            case textOperate:
-                isText = true;
-                isMove = false;
+            case addOperate:
+                isAdd = true;
+                break;
+            case addContent.getElementsByClassName('editor-resize-handle')[0]:
+                isContent = true;
                 break;
             default:
+                isMove = true;
                 for ( let i = 0, len = movePoints.length; i < len; ++i ) {
                     if ( movePoints[i] === target ) {
                         curPoint = pointDirection[i];
@@ -244,24 +250,30 @@ function bindEvents( editorObj ) {
             if ( newHeight != offsetHeight ) cropStyle.height = newHeight + "px";
 
             runFunction(editorObj.onMovingCrop, editorObj, []);
-        } else if ( isText ) {
-            let newLeft = text.offsetLeft + curPos.movementX,
-                newTop = text.offsetTop + curPos.movementY;
+        } else if ( isAdd ) {
+            let newLeft = addition.offsetLeft + curPos.movementX,
+                newTop = addition.offsetTop + curPos.movementY;
 
             if ( newLeft < 0 ) {
                 newLeft = 0;
-            } else if ( newLeft + text.offsetWidth > maxPos.width ) {
-                newLeft = maxPos.width - text.offsetWidth;
+            } else if ( newLeft + addition.offsetWidth > maxPos.width ) {
+                newLeft = maxPos.width - addition.offsetWidth;
             }
 
             if ( newTop < 0 ) {
                 newTop = 0;
-            } else if ( newTop + text.offsetHeight > maxPos.height ) {
-                newTop = maxPos.height - text.offsetHeight;
+            } else if ( newTop + addition.offsetHeight > maxPos.height ) {
+                newTop = maxPos.height - addition.offsetHeight;
             }
 
-            text.style.left = newLeft + 'px';
-            text.style.top = newTop + 'px';
+            addition.style.left = newLeft + 'px';
+            addition.style.top = newTop + 'px';
+        } else if ( isContent ) {
+            let newWidth = addContent.offsetWidth,
+                newHeight = addContent.offsetHeight;
+
+            addContent.style.width = newWidth + movementX + 'px';
+            addContent.style.height = newHeight + movementY + 'px';
         }
 
         clearTimeout(moveTimer);
@@ -277,7 +289,8 @@ function bindEvents( editorObj ) {
         isMove = false;
         isResize = false;
         isDraw = false;
-        isText = false;
+        isAdd = false;
+        isContent = false;
 
         clearTimeout(moveTimer);
     }
@@ -381,7 +394,7 @@ export default class PicTune {
         const picture = document.createElement('img');
         const showImage = document.createElement('img');
         const canvas = fx.canvas();
-        const text = document.createElement('div');
+        const addition = document.createElement('div');
         const crop = document.createElement('div');
         const originImage = new Image();
 
@@ -390,7 +403,7 @@ export default class PicTune {
         this.picture = picture;
         this.showImage = showImage;
         this.canvas = canvas;
-        this.text = text;
+        this.addition = addition;
         this.crop = crop;
         this.originImage = originImage;
 
@@ -405,13 +418,13 @@ export default class PicTune {
         canvas.className = 'image-editor-canvas';
         canvas.innerText = '你的浏览器不支持HTML5.';
         
-        text.className = 'image-editor-text';
-        text.style.display = "none";
-        text.innerHTML = 
-            '<div class="editor-text-content" contentEditable="true"></div>' + 
-            '<div class="editor-text-operate">' +
-                '<div class="editor-text-cancel">×</div>' + 
-                '<div class="editor-text-confirm">✔</div>' + 
+        addition.className = 'image-editor-addition';
+        addition.style.display = "none";
+        addition.innerHTML = 
+            '<div class="editor-add-content" contentEditable="true"></div>' + 
+            '<div class="editor-add-operate">' +
+                '<div class="editor-add-cancel">×</div>' + 
+                '<div class="editor-add-confirm">✔</div>' + 
             '</div>';
 
         crop.className = 'image-editor-crop';
@@ -425,7 +438,7 @@ export default class PicTune {
         source.appendChild(picture);
         source.appendChild(showImage);
         source.appendChild(canvas);
-        source.appendChild(text);
+        source.appendChild(addition);
         source.appendChild(crop);
 
         wrapper.appendChild(source);
@@ -508,7 +521,7 @@ export default class PicTune {
      */
     reset () {
         this.picture.src = this.originImage.src;
-        this.text.style.display = 'none';
+        this.addition.style.display = 'none';
     }
 
     /**
@@ -842,70 +855,92 @@ export default class PicTune {
     }
 
     /**
-     * 显示/隐藏文本框
-     * @param  {[type]} toggle [description]
-     * @param  {[type]} style  [description]
-     * @return {[type]}        [description]
+     * 显示/隐藏添加元素框
+     * @param  {Boolean}    toggle 显示/隐藏
+     * @param  {Object}     style  元素框样式
+     * @return 无
      */
-    toggleText ( toggle, style ) {
-        const text = this.text;
-        const textStyle = text.style;
+    toggleAdd ( toggle, style ) {
+        const addition = this.addition;
+        const addStyle = addition.style;
+        const addContent = addition.getElementsByClassName('editor-add-content')[0];
 
-        if ( toggle && textStyle.display === 'none' ) {
-            text.getElementsByClassName('editor-text-content')[0].innerHTML = '';
-            textStyle.left = `calc(50% - ${text.offsetWidth}px)`;
-            textStyle.top = '60%';
+        if ( toggle && addStyle.display === 'none' ) {
+            addContent.innerHTML = '';
+            addContent.style.width = '';
+            addContent.style.height = '';
         }
-
-        textStyle.display = toggle ? 'block' : 'none';
 
         if ( style ) {
             for ( let s in style ) {
+                if ( s === 'src' ) continue;
+
                 let ss = style[s];
-                textStyle[s] = ss;
-                if ( s === 'font-size' ) textStyle['line-height'] = textStyle['min-height'] = ss;
+
+                addStyle[s] = ss;
+
+                if ( s === 'font-size' ) addStyle['line-height'] = addStyle['min-height'] = ss;
+            }
+
+            if ( style.src ) {
+                addContent.innerHTML = `<img src="${style.src}" /><div class="editor-resize-handle"></div>`;
+                addStyle['text-align'] = 'center';
+                addContent.contentEditable = false;
+            } else {
+                addStyle['text-align'] = 'left';
+                addContent.contentEditable = true;
             }
         }
+        addStyle.display = toggle ? 'block' : 'none';
+        addStyle.left = `calc(50% - ${addition.offsetWidth/2}px)`;
+        addStyle.top = `calc(50% - ${addition.offsetHeight/2}px)`;
+
     }
 
     /**
-     * 确定添加文本
+     * 确定添加元素
      * @return 无
      */
-    commitText () {
-        let text = this.text,
-            textStyle = text.style,
-            textContent = text.getElementsByClassName('editor-text-content')[0],
-            content = textContent.innerText.split(/\n(?!\s*$)/g),
+    commitAdd () {
+        let addition = this.addition,
+            addStyle = addition.style,
+            addContent = addition.getElementsByClassName('editor-add-content')[0],
+            img = addContent.getElementsByTagName('img')[0],
             picture = this.picture,
-            rate = picture.height / this.canvas.clientHeight,
-            textHeight = text.clientHeight * rate,
-            lineHeight = textHeight / content.length,
-            x = (text.offsetLeft - 1) * rate,
-            y = (text.offsetTop - 5) * rate + textHeight;
+            rate = picture.height / this.canvas.clientHeight;
 
         let c = this.get2dCanvas(),
-            c2 = c.getContext('2d'),
-            params = ['font-style', 'font-variant', 'font-weight', 'font-size', 'font-family'],
-            font = [];
+            c2 = c.getContext('2d');
 
-        for ( let i = 0, len = params.length; i < len; ++i ) {
-            let p = params[i],
-                s = textStyle[p];
+        if ( img ) {
+            c2.drawImage(img, (addition.offsetLeft + img.offsetLeft) * rate, addition.offsetTop * rate, img.width * rate, img.height * rate);
+        } else {
+            let content = addContent.innerText.split(/\n(?!\s*$)/g),
+                addHeight = addition.clientHeight * rate,
+                lineHeight = addHeight / content.length,
+                x = (addition.offsetLeft - 1) * rate,
+                y = (addition.offsetTop - 5) * rate + addHeight,
+                params = ['font-style', 'font-variant', 'font-weight', 'font-size', 'font-family'],
+                font = [];
 
-            if ( p === 'font-size' ) s = parseInt(parseInt(s) * rate) + 'px';
-            if ( s ) font.push(s);
+            for ( let i = 0, len = params.length; i < len; ++i ) {
+                let p = params[i],
+                    s = addStyle[p];
+
+                if ( p === 'font-size' ) s = parseInt(parseInt(s) * rate) + 'px';
+                if ( s ) font.push(s);
+            }
+
+            c2.font = font.join(' ');
+            c2.fillStyle = addStyle.color || '#000';
+
+            for ( let i = content.length - 1; i >= 0; --i ) {
+                c2.fillText(content[i], x, y);
+                y -= lineHeight;
+            }
         }
 
-        c2.font = font.join(' ');
-        c2.fillStyle = textStyle.color || '#000';
-
-        for ( let i = content.length - 1; i >= 0; --i ) {
-            c2.fillText(content[i], x, y);
-            y -= lineHeight;
-        }
-
-        textStyle.display = 'none';
+        addStyle.display = 'none';
         this.confirm(c.toDataURL(this.output || this.file.type));
     }
 }

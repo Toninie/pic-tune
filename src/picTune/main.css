@@ -15,7 +15,7 @@
     max-width: 90%;
     max-height: 80%;
     vertical-align: middle;
-    /*overflow: hidden;*/
+    box-shadow: 2px 2px 5px #666;
 }
 
 .image-editor-picture {
@@ -103,7 +103,7 @@
     cursor: se-resize;
 }
 
-.image-editor-text {
+.image-editor-addition {
     position: absolute;
     min-width: 50px;
     max-width: 100%;
@@ -115,7 +115,7 @@
     background-color: rgba(234,234,234, 0.5);
 }
 
-.editor-text-operate {
+.editor-add-operate {
     position: absolute;
     top: -20px;
     left: -1px;
@@ -127,7 +127,7 @@
     cursor: move;
 }
 
-.editor-text-operate > div {
+.editor-add-operate > div {
     display: inline-block;
     float: right;
     width: 16px;
@@ -144,11 +144,26 @@
     cursor: pointer;
 }
 
-.editor-text-operate > div.editor-text-confirm {
+.editor-add-operate > div.editor-add-confirm {
     background-color: green;
     font-size: 12px;
 }
 
-.editor-text-operate > div:hover {
+.editor-add-operate > div:hover {
     opacity: 0.8;
-} 
+}
+
+.editor-add-content img {
+    margin: 0;
+    max-width: 80%;
+    max-height: 80%;
+}
+
+.editor-resize-handle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 50px;
+    height: 50px;
+    cursor: se-resize;
+}

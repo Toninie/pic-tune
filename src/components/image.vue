@@ -12,15 +12,21 @@
                 :on-change="onFileChange">
                 <el-button>本地图片</el-button>
             </el-upload>
-            <el-input v-model="keyword" prefix-icon="el-icon-search" placeholder="输入关键字搜索图片"></el-input>
-            <div v-if="!showList || !showList.length" class="image-tips"><i v-bind:class="{'el-icon-loading': isLoad}"></i></div>
-            <ul v-else>
-                <li v-for="item in showList"
-                    :title="item.name"
-                    @click="editor.loadAsUrl(item.url)">
-                    <img :src="item.url" />
-                </li>
-            </ul>
+            <el-checkbox v-model="isAdd">插入素材</el-checkbox>
+
+            <el-tabs v-model="active" @tab-click="switchTabs">
+                <el-tab-pane v-for="(item, key) in allList" :label="item.label" :name="key">
+                    <div v-if="!item.data.length || isLoad" class="image-tips"><i v-bind:class="{'el-icon-loading': isLoad}"></i></div>
+                    <ul v-else>
+                        <li v-for="pic in item.data"
+                            :title="pic.name"
+                            @click="selectPic(pic)">
+                            <img :src="pic.url" />
+                        </li>
+                    </ul>
+                </el-tab-pane>
+            </el-tabs>
+            
         </el-popover>
 
         <el-button class="icon-image" type="primary" v-popover:image></el-button>
@@ -32,67 +38,81 @@ export default {
     props: ['editor'],
     data () {
         return {
-            isLoad: true,
-            keyword: '',
-            allList: [],
-            showList: null
-        }
-    },
-    watch: {
-        allList() {
-            this.filterList();
-        },
-        keyword() {
-            this.filterList();
+            isLoad: false,
+            isAdd: true,
+            active: 'record',
+            allList: {
+                record: {
+                    label: '最近',
+                    data: []
+                },
+                panda: {
+                    label: '熊猫人',
+                    data: [],
+                    idx: 1
+                },
+                face: {
+                    label: '表情',
+                    data: [],
+                    idx: 1
+                }
+            },
         }
     },
     methods: {
         onFileChange ( e ) {
             const file = e.raw;
 
-            this.editor
-                .loadAsFile(file)
-                .then((url) => {
-                    this.allList.unshift({
-                        url: window.URL.createObjectURL(file),
-                        name: '图片' + Date.now()
-                    })
-                });
+            this.selectPic({url: window.URL.createObjectURL(file)});
         },
-        filterList() {
-            let keyword = this.keyword,
-                allList = this.allList,
-                list;
-
-            if ( keyword ) {
-                list = [];
-
-                for ( let i = 0, len = allList.length; i < len; ++i ) {
-                    let row = allList[i];
-
-                    if ( row.name.match(keyword) ) list.push(row);
-                }
+        selectPic ( pic ) {
+            if ( this.isAdd ) {
+                this.editor.toggleAdd(true, {src: pic.url});
             } else {
-                list = allList.slice(0);
+                let data = this.allList.record.data;
+
+                data.unshift({
+                    url: window.URL.createObjectURL(this.editor.getData(undefined, undefined, true)),
+                    name: '图片' + Date.now()
+                });
+                this.editor.loadAsUrl(pic.url);
+            }
+        },
+        switchTabs ( tab ) {
+            let name = tab.name,
+                curList = this.allList[name],
+                curIdx = curList.idx;
+
+            if ( name === 'record' || curIdx === -1 ) {
+                this.isLoad = false;
+                return;
+            } else {
+                this.isLoad = true;
             }
 
-            this.showList = list;
+            const img = new Image();
+
+            img.onload = () => {
+                curList.data.push({
+                    url: img.src,
+                    name: `${tab.label}_${curIdx}`
+                });
+
+                ++ curList.idx;
+
+                if ( this.active === name ) this.switchTabs(tab);
+            }
+
+            img.onerror = () => {
+                curList.idx = -1;
+                this.isLoad = false;
+            }
+
+            img.src = `static/${name}/a${curIdx}.png`;
         }
     },
     mounted() {
-        this.$http.get(`static/meme.json?_=${Date.now()}`)
-        .then(res => {
-            let list = this.allList.concat(res.data || []);
-            this.allList = list;
-
-            this.isLoad = false;
-
-            if ( list.length ) this.editor.loadAsUrl(list[0].url);
-        })
-        .catch(error => {
-            this.isLoad = false;
-            console.log(error);
-        });
+        
     }
 }
 </script>
@@ -102,10 +122,9 @@ export default {
     display: inline-block;
 }
 
-.el-input {
-    display: inline-block;
-    width: 200px;
+.el-checkbox {
     float: right;
+    margin: 10px;
 }
 
 .image-tips {
