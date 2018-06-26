@@ -913,7 +913,7 @@ export default class PicTune {
             c2 = c.getContext('2d');
 
         if ( img ) {
-            c2.drawImage(img, (addition.offsetLeft + img.offsetLeft) * rate, addition.offsetTop * rate, img.width * rate, img.height * rate);
+            c2.drawImage(img, (addition.offsetLeft + img.offsetLeft - 1) * rate, (addition.offsetTop - 1) * rate, img.width * rate, img.height * rate);
         } else {
             let content = addContent.innerText.split(/\n(?!\s*$)/g),
                 addHeight = addition.clientHeight * rate,
