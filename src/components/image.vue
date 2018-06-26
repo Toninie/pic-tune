@@ -16,12 +16,17 @@
 
             <el-tabs v-model="active" @tab-click="switchTabs">
                 <el-tab-pane v-for="(item, key) in allList" :label="item.label" :name="key">
-                    <div v-if="!item.data.length || isLoad" class="image-tips"><i v-bind:class="{'el-icon-loading': isLoad}"></i></div>
+                    <div v-if="!item.data.length" class="image-tips">
+                        <i v-bind:class="{'el-icon-loading': isLoad}"></i>
+                    </div>
                     <ul v-else>
                         <li v-for="pic in item.data"
                             :title="pic.name"
                             @click="selectPic(pic)">
                             <img :src="pic.url" />
+                        </li>
+                        <li v-if="isLoad">
+                            <i class="el-icon-loading"></i>
                         </li>
                     </ul>
                 </el-tab-pane>
