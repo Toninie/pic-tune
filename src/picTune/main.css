@@ -110,9 +110,17 @@
     min-height: 20px;
     line-height: 20px;
     font-size: 20px;
-    border: 1px solid #eaeaea;
+    border: 1px dotted #333;
     text-align: left;
-    background-color: rgba(234,234,234, 0.5);
+}
+
+.image-editor-addition > * {
+    opacity: 0;
+}
+
+.image-editor-addition:hover > *,
+.image-editor-addition.active > * {
+    opacity: 1;
 }
 
 .editor-add-operate {
@@ -121,7 +129,7 @@
     left: -1px;
     width: calc(100% + 2px);
     height: 20px;
-    background-color: #eaeaea;
+    background-color: #333;
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
     cursor: move;
@@ -144,11 +152,6 @@
     cursor: pointer;
 }
 
-.editor-add-operate > div.editor-add-confirm {
-    background-color: green;
-    font-size: 12px;
-}
-
 .editor-add-operate > div:hover {
     opacity: 0.8;
 }
@@ -157,6 +160,10 @@
     margin: 0;
     max-width: 80%;
     max-height: 80%;
+}
+
+.image-editor-addition:hover .editor-add-content {
+    background: #fff;
 }
 
 .editor-resize-handle {

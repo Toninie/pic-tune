@@ -102,6 +102,30 @@ export function convertDataurlToBlob ( urlData, type ) {
     });
 }
 
+/**
+ * 
+ */
+export function toggleClass ( el, cls, toggle ) {
+    let className = el.className,
+        reg = new RegExp(`(^|\\s+)${cls}(?=\\s+|$)`, 'g'),
+        isHas = !!className.match(reg),
+        isChange = false;
+
+    toggle = typeof toggle !== 'undefined' ? toggle : !isHas;
+
+    if ( !toggle && isHas ) {
+        el.className = className.replace(reg, '');
+        isChange = true;
+    } else if ( toggle && !isHas ) {
+        className = className.split(/\s+/);
+        className.push(cls);
+        el.className = className.join(' ');
+        isChange = true;
+    }
+
+    return isChange;
+}
+
 function ajaxFactory ( method ) {
     return function ( options ) {
         const req = new XMLHttpRequest();

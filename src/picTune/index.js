@@ -1,7 +1,7 @@
 import './main.css';
 import { scale } from './scale.js';
 import { fx } from './glfx.js';
-import { http, turnOver, runFunction, convertDataurlToBlob } from './utils';
+import { http, turnOver, runFunction, convertDataurlToBlob, toggleClass } from './utils';
 
 // 裁剪框的一对边框所占像素
 const BORDER_PIX = 4;
@@ -54,9 +54,6 @@ function bindEvents( editorObj ) {
     addOperate.addEventListener('touchstart', moveStart, false);
     addOperate.onclick = ( e ) => {
         switch ( e.target.className ) {
-            case 'editor-add-confirm':
-                editorObj.commitAdd();
-                break;
             case 'editor-add-cancel':
                 editorObj.toggleAdd(false);
                 break;
@@ -125,9 +122,13 @@ function bindEvents( editorObj ) {
                 break;
             case addOperate:
                 isAdd = true;
+                !toggleClass(addition, 'active', false) && editorObj.skip('-');
+                addition.style.display = 'block';
                 break;
             case addContent.getElementsByClassName('editor-resize-handle')[0]:
                 isContent = true;
+                !toggleClass(addition, 'active', false) && editorObj.skip('-');
+                addition.style.display = 'block';
                 break;
             default:
                 isMove = true;
@@ -286,6 +287,11 @@ function bindEvents( editorObj ) {
             drawPoint.length = 0;
         }
 
+        if ( isAdd || isContent ) {
+            editorObj.commitAdd();
+            addition.style.display = 'block';
+        }
+
         isMove = false;
         isResize = false;
         isDraw = false;
@@ -424,7 +430,6 @@ export default class PicTune {
             '<div class="editor-add-content" contentEditable="true"></div>' + 
             '<div class="editor-add-operate">' +
                 '<div class="editor-add-cancel">×</div>' + 
-                '<div class="editor-add-confirm">✔</div>' + 
             '</div>';
 
         crop.className = 'image-editor-crop';
@@ -513,6 +518,8 @@ export default class PicTune {
         this.picture.src = dataurl;
         this.originImage.src = dataurl;
         this.showImage.src = dataurl;
+
+        this.addition.style.display = 'none';
     }
 
     /**
@@ -555,6 +562,7 @@ export default class PicTune {
             this.picture.src = dataurl;
             this.originImage.src = dataurl;
             this.showImage.src = dataurl;
+            this.addition.style.display = 'none';
         }
     }
 
@@ -891,10 +899,11 @@ export default class PicTune {
                 addContent.contentEditable = true;
             }
         }
+
         addStyle.display = toggle ? 'block' : 'none';
         addStyle.left = `calc(50% - ${addition.offsetWidth/2}px)`;
         addStyle.top = `calc(50% - ${addition.offsetHeight/2}px)`;
-
+        toggleClass(addition, 'active', true);
     }
 
     /**
@@ -940,7 +949,6 @@ export default class PicTune {
             }
         }
 
-        addStyle.display = 'none';
         this.confirm(c.toDataURL(this.output || this.file.type));
     }
 }
